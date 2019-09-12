@@ -1,43 +1,44 @@
 import pandas as pd
-import re
 import requests
 from bs4 import BeautifulSoup
 
-url = 'https://www.baseballmusings.com/cgi-bin/CurStreak.py'
-page = requests.get(url)
-soup = BeautifulSoup(page.text, 'html.parser')
-
-#attrs = {'attribute1_name': 'attribute1_value', 'attribute2_name': 'attribute2_value'}
-#hot_batters = soup.find_all('div', attrs = {'class': 'hcPlayerMugshot'})
-table = soup.find('table', attrs={'class': 'dbd'}) # get table html
-#hot_batters = soup.find_all('td', attrs = {'class': 'letter'}) #get names html
-players_rows = table.find_all('tr') # get player rows from table
+# Program mines the first 20 hitters with longest active hitting streaks from baseballmusings's
+# 'Current Hit Streaks' database and stores them in a pandas dataframe.
 
 
-#headers = players_rows[0]
-headers = []
+def get_hitting_streaks():
+    url = 'https://www.baseballmusings.com/cgi-bin/CurStreak.py' # link to MLB current hit streak leaders
+    page = requests.get(url)
+    soup = BeautifulSoup(page.text, 'html.parser')
 
-for col in players_rows[0]:
-    try: # replace with type check
-        headers.append(col.text)
-    except : # fix bare except
-        pass
+    table = soup.find('table', attrs={'class': 'dbd'}) # get table html
+    players_rows = table.find_all('tr') # get player rows from table
 
-headers = (headers[:12]) # discard date header
+    headers = [] # list for headers of table
+    headers = get_headers(headers, players_rows[0]) # get column headers from first row of table
 
-#print(headers)
+    players = [] # list of hitter stats
+    players = get_players(players, players_rows[1:21]) # get first 20 hitters
 
-players = []
+    df = pd.DataFrame(players, columns=headers) # create dataframe from player_db using db_columns
+    return(df)
 
-for line in players_rows[1:21]:
-    name = line.find('td', attrs={'class': 'letter'}) # get name html
-    name = name.get_text() # strip html
-    name = name[:len(name) - 1] # discard /n
-    stats = line.find_all('td', attrs={'class': 'number'}) # get stats from html
-    row_stats = [] # list of stats in row
-    for stat in stats[:11]: # ignore date
-        row_stats.append(stat.text) # get get and add to row
-    tmp_tuble = (name,row_stats)
-    players.append(tmp_tuble) # add tuble to players list
 
-#print(players)
+def get_headers(headers, header_row):
+    for col in header_row:
+        try:
+            headers.append(col.text) # add individual column headers to list
+        except AttributeError:
+            pass
+
+    headers = (headers[:12]) # discard date header
+    return headers
+
+
+def get_players(players, player_rows):
+    for player in player_rows:
+        stats = [stat.text for stat in player.find_all('td')] # get stats for player
+        stats[0] = (stats[0][:len(stats[0]) - 1]) # discard \n from name
+        players.append(stats[:12]) # add to players list
+
+    return players
