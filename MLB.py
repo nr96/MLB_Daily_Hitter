@@ -29,7 +29,7 @@ def main():
 # get_hitter_splits(last_7_df, hitting_streak_df, players_with_hitting_streak)
 # print(players_with_hitting_streak)
 # for url in players_with_hitting_streak:
-#	print (get_player_splits(url))
+#   print (get_player_splits(url))
 
 # print(player)
 # print(players_with_hitting_streak)
@@ -52,11 +52,11 @@ def get_splits_by_player(last_7_df):
 
 
 def get_player_url(last_7_df):
-    player_name = input("Enter name of player: ") # get name of player to search for
+    player_name = input("Enter name of player: ")  # get name of player to search for
     # print("Beginning Search....")
-    for i, player in enumerate(last_7_df.iloc[:, 0], 0): # search player names in last_7_df
+    for i, player in enumerate(last_7_df.iloc[:, 0], 0):  # search player names in last_7_df
         if player == player_name:
-            player_url = last_7_df.iloc[i, 17][0] # if names match, return url
+            player_url = last_7_df.iloc[i, 17][0]  # if names match, return url
             # print("player found: ", player_url)
             return player_url
 
@@ -66,17 +66,18 @@ def get_splits():
 
 
 def check_daily_lineups(lineups_df):
-    player_name = input("Enter name of player: ") # get name of player to search for
+    player_name = input("Enter name of player: ")  # get name of player to search for
     for player in lineups_df.iloc[:, 0]:
-        #print(player)
+        # print(player)
         if player == player_name:
-            print ("player found")
+            print("player found")
             break
 
 
 def get_hitter_splits(last_7_df, hitting_streak_df, players_with_hitting_streak):
-    for i, player1 in enumerate(last_7_df.iloc[:, 0], 0): # go through players in last_7_df
-        for j, player2 in enumerate(hitting_streak_df.iloc[:, 0]): # check if player is in hitting_streak_df
+    for i, player1 in enumerate(last_7_df.iloc[:, 0], 0):  # go through players in last_7_df
+        # check if player is in hitting_streak_df
+        for j, player2 in enumerate(hitting_streak_df.iloc[:, 0]):
             if player1 == player2:
                 # print('found: ', player2, "at ", i)
                 player_url = last_7_df.iloc[i, 17][0]
