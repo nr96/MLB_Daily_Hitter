@@ -7,12 +7,11 @@ def main():
     print("Loading DB's...")
     last_7_df = get_last7db()
     lineups_df = get_lineups()
-    if not lineups_df:
-        print("Lineups not loaded, are there games today?")
-        exit(1)
 
     print("Running Algorithm...")
     lineup_splits = get_lineup_splits(lineups_df,last_7_df)
+    for player in lineup_splits:
+        print(player[0][0])
     filter_players(lineup_splits)
     get_weightedAvg(lineup_splits)
     lineup_splits.sort(key=lambda player: player[2], reverse=True)
@@ -28,24 +27,26 @@ def main():
 # get splits for all players in daily_lineup
 def get_lineup_splits(lineups_df, last_7_df):
     lineup_splits = []
-    for player in lineups_df.iloc[:, 0]:
+    for i, player in enumerate(lineups_df.iloc[:,0],0):
+        opp_picther = lineups_df.iloc[i,4]
         player_info = get_player_info(last_7_df,player)
         if player_info: # player_info will be NoneType if not in last_7_df
              splits = get_player_splits(player_info[3])
+             player_info.append(opp_picther)
              lineup_splits.append([player_info,splits])
     return lineup_splits
+
 
 # discard players with undersirable stats or insufficient data
 def filter_players(lineup_splits):
     for player in list(lineup_splits):
         splits = player[1]
-        last7AB = player[0][1]
-        last7Avg = player[0][2]
 
         last_row = (splits.iloc[-1,0])
         faced_pitcher = False
+        opp_pitcher_f, opp_pitcher_l = player[0][4].split()
 
-        if 'vs.' in last_row: # check if vs Pitcher history
+        if f'vs. {opp_pitcher_l}' in last_row: # check if vs Pitcher history
             faced_pitcher = True
             pitcher_splits = splits.iloc[-1,:]
             vsPitcherAB = int(pitcher_splits[1])
@@ -53,9 +54,6 @@ def filter_players(lineup_splits):
 
         if faced_pitcher is False: # not enough info
             lineup_splits.remove(player) # if not PitcherHistory discard player
-
-        elif last7Avg < .250 or last7AB < 10: # undersirable stats or sample size to small
-            lineup_splits.remove(player)
 
         elif vsPitcherAvg < .250 or vsPitcherAB < 6: # undersirable stats or sample size to small
             lineup_splits.remove(player)
@@ -67,8 +65,8 @@ def get_weightedAvg(lineup_splits):
         pitcher_splits =  player[1].iloc[-1,:]
         last7Avg = player[0][2]
         vsPitcherAvg = float(pitcher_splits[9])
-        rank_avg = ( (last7Avg + vsPitcherAvg) / 2)
-        player.append(rank_avg)
+        weightedAvg = ( (last7Avg + vsPitcherAvg) / 2)
+        player.append(weightedAvg)
 
 def get_player_info(last_7_df, player_name):
     if player_name[1] == '.': first_name, last_name = player_name.split('. ')
@@ -79,6 +77,8 @@ def get_player_info(last_7_df, player_name):
             AB = int(last_7_df.iloc[i, 2])
             AVG = float(last_7_df.iloc[i, 13])
             player_url = last_7_df.iloc[i, 17][0]  # if names match, return url
-            return [player,AB,AVG,player_url]
+
+            if AVG > .250 or AB > 10: # undersirable stats or sample size to small
+                return [player,AB,AVG,player_url]
 
 main()
