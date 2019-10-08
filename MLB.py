@@ -10,8 +10,6 @@ def main():
 
     print("Running Algorithm...")
     lineup_splits = get_lineup_splits(lineups_df,last_7_df)
-    for player in lineup_splits:
-        print(player[0][0])
     filter_players(lineup_splits)
     get_weightedAvg(lineup_splits)
     lineup_splits.sort(key=lambda player: player[2], reverse=True)
