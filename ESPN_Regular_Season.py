@@ -54,4 +54,5 @@ def get_players(player_db, player_rows):
         stats = stats[1:] + stats[:1] # move 0th (link) column to last position
         player_db.append(stats) # add to player_db and discard rank
 
-#get_last7db()
+if __name__ == "__main__":
+    get_last7db()

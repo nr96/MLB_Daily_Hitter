@@ -2,8 +2,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-url = 'http://www.espn.com/mlb/player/_/id/32422'
-
+test_url = 'http://www.espn.com/mlb/player/_/id/32422'
 
 def get_player_splits(url):
     page = requests.get(url)
@@ -30,11 +29,5 @@ def get_player_splits(url):
 
     return(df)
 
-    # return
-
-    # print(headers)
-    # for split in player_splits:
-    #   print(split)
-
-
-#print(get_player_splits(url))
+if __name__ == "__main__":
+    get_player_splits(test_url)
