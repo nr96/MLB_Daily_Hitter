@@ -3,19 +3,21 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-# Program mines the first 320 hitters from ESPN's 'MLB Player Batting Stats - Last 7 Days'
+# Program mines the first 320 hitters from ESPN's 'MLB Player Batting Stats - Last 7 Days - 2019'
 # database and stores them in a pandas dataframe.
 
 
-def get_last7():
-    urls = ['http://www.espn.com/mlb/stats/batting/_/split/61/sort/atBats/count/',
-            'http://www.espn.com/mlb/stats/batting/_/split/61/sort/atBats/count/41',
-            'http://www.espn.com/mlb/stats/batting/_/split/61/sort/atBats/count/81',
-            'http://www.espn.com/mlb/stats/batting/_/split/61/sort/atBats/count/121',
-            'http://www.espn.com/mlb/stats/batting/_/split/61/sort/atBats/count/161',
-            'http://www.espn.com/mlb/stats/batting/_/split/61/sort/atBats/count/201',
-            'http://www.espn.com/mlb/stats/batting/_/split/61/sort/atBats/count/241',
-            'http://www.espn.com/mlb/stats/batting/_/split/61/sort/atBats/count/281'
+def get_last7db():
+    urls = ['http://www.espn.com/mlb/stats/batting/_/seasontype/2',
+            'http://www.espn.com/mlb/stats/batting/_/seasontype/2/split/61/count/41',
+            'http://www.espn.com/mlb/stats/batting/_/seasontype/2/split/61/count/81',
+            'http://www.espn.com/mlb/stats/batting/_/seasontype/2/split/61/count/121',
+            'http://www.espn.com/mlb/stats/batting/_/seasontype/2/split/61/count/161',
+            'http://www.espn.com/mlb/stats/batting/_/seasontype/2/split/61/count/201',
+            'http://www.espn.com/mlb/stats/batting/_/seasontype/2/split/61/count/241',
+            'http://www.espn.com/mlb/stats/batting/_/seasontype/2/split/61/count/281',
+            'http://www.espn.com/mlb/stats/batting/_/seasontype/2/split/61/count/321',
+            'http://www.espn.com/mlb/stats/batting/_/seasontype/2/split/61/count/361'
             ] # list of urls to mine
 
     player_db = [] # list for players
@@ -31,6 +33,8 @@ def get_last7():
         get_players(player_db, player_rows)
 
     df = pd.DataFrame(player_db, columns=db_columns) # create dataframe from player_db using db_columns
+
+    #print(df.iloc[0,:])
     return df
 
 
@@ -49,4 +53,5 @@ def get_players(player_db, player_rows):
         stats[0] = player_link # discard rank and add player link
         stats = stats[1:] + stats[:1] # move 0th (link) column to last position
         player_db.append(stats) # add to player_db and discard rank
-        # player_db.append(stats[1:]) # add to player_db and discard rank
+
+#get_last7db()
