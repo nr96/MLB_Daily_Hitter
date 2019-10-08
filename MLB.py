@@ -7,6 +7,9 @@ def main():
     print("Loading DB's...")
     last_7_df = get_last7db()
     lineups_df = get_lineups()
+    if not lineups_df:
+        print("Lineups not loaded, are there games today?")
+        exit(1)
 
     print("Running Algorithm...")
     lineup_splits = get_lineup_splits(lineups_df,last_7_df)
@@ -15,9 +18,12 @@ def main():
     lineup_splits.sort(key=lambda player: player[2], reverse=True)
 
     # final output
-    print("\nMost Likely Hitters")
-    for i, player in enumerate(lineup_splits,0):
-        print(f"{i+1}. {player[0][0]}, weightedAvg: {player[2]}")
+    if len(lineup_splits):
+        print("\nMost Likely Hitters")
+        for i, player in enumerate(lineup_splits,0):
+            print(f"{i+1}. {player[0][0]}, weightedAvg: {player[2]}")
+    else:
+        print('No desirable hitters')
 
 # get splits for all players in daily_lineup
 def get_lineup_splits(lineups_df, last_7_df):
