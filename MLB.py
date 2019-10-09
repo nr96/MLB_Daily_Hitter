@@ -63,6 +63,7 @@ def get_weightedAvg(lineup_splits):
         pitcher_splits =  player[1].iloc[-1,:]
         last7Avg = player[0][2]
         vsPitcherAvg = float(pitcher_splits[9])
+        print(player[0][0],last7Avg, vsPitcherAvg)
         weightedAvg = ( (last7Avg + vsPitcherAvg) / 2)
         player.append(weightedAvg)
 
@@ -76,7 +77,7 @@ def get_player_info(last_7_df, player_name):
             AVG = float(last_7_df.iloc[i, 13])
             player_url = last_7_df.iloc[i, 17][0]  # if names match, return url
 
-            if AVG > .250 or AB > 10: # undersirable stats or sample size to small
+            if AVG > .250 and AB > 10: # undersirable stats or sample size to small
                 return [player,AB,AVG,player_url]
 
 main()
