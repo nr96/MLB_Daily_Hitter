@@ -11,6 +11,7 @@ def main():
     args = parser.parse_args()
     load_dbs(args)
 
+# load dbs according to args
 def load_dbs(args):
     print("Loading DB's...")
     pitcher_db = get_espn_pitchers()
@@ -20,13 +21,13 @@ def load_dbs(args):
         get_hitters(lineups_df,pitcher_db)
     else:
         lineups_df = get_lineups_df('https://www.baseballpress.com/lineups?q=%2Flineups%2F')
-        if len(lineups_df) > 1:
+        if len(lineups_df) > 9:
             get_hitters(lineups_df,pitcher_db)
         else:
             print(" \nLineups not loaded, have they been released yet?")
             print('https://www.baseballpress.com/lineups?q=%2Flineups%2F\n')
 
-
+# run algorithm for selecting hitters
 def get_hitters(lineups_df,pitcher_db):
     print("Running Algorithm...")
     lineup_splits = get_lineup_splits(lineups_df,pitcher_db)
@@ -69,7 +70,7 @@ def get_lineup_splits(lineups_df,pitcher_db):
 
     return lineup_splits
 
-
+# get batter vs pitcher history
 def get_BvP(player_splits,player_faced,name,opp_pitcher):
     hitter_name = player_faced[0]
     if hitter_name == name:
@@ -89,18 +90,18 @@ def get_BvP(player_splits,player_faced,name,opp_pitcher):
 def get_PitcherHistory(opp_pitcher_id,team_id):
     new_url = f'http://www.espn.com/mlb/player/batvspitch/_/id/{opp_pitcher_id}/teamId/{team_id}'
     df = get_pitcher_splits(new_url)
-    return(df)
+    return df
 
 
 def get_opp_pitch_url(opp_pitcher,pitcher_db):
     url = pitcher_db.loc[opp_pitcher][-1]
-    if url: return(url)
+    if url: return url
 
 
 def get_player_id(url):
-    id = [ch for ch in url if ch.isdigit()]
-    id = ''.join(id)
-    return(id)
+    id = [ch for ch in url if ch.isdigit()] # parse url for digits
+    id = ''.join(id) # join digits
+    return id
 
 
 # discard players with undersirable stats or insufficient data
@@ -110,22 +111,22 @@ def filter_players(lineup_splits):
 
         vsPitcherAB = None
         vsPitcherAvg = None
-        last_row = splits.iloc[-1,:]
+        last_row = splits.iloc[-1,:] # get last row in splits
 
-        if (float(last_7[9]) < .250): # not enough info
-            lineup_splits.remove((player,splits)) # if not PitcherHistory discard player
+        if (float(last_7[9]) < .250): # check Avg over last7
+            lineup_splits.remove((player,splits)) # undersirable stats
             continue
-        if f'vs' in last_row[0]:
+        if f'vs' in last_row[0]: # check for history vs pitcher
             pitcher_splits = last_row
-            vsPitcherAB = int(pitcher_splits[1])
-            vsPitcherAvg = float(pitcher_splits[9])
+            vsPitcherAB = int(pitcher_splits[1]) # get vsPitcherABs
+            vsPitcherAvg = float(pitcher_splits[9]) # get vsPitcherAvg
             if (vsPitcherAvg < .250) or (vsPitcherAB < 5): # undersirable stats or sample size to small
                 lineup_splits.remove((player,splits))
 
     return lineup_splits
 
 
-# use last7GamesAvg and vsPitcherAvg to calculate weightedAvg
+# calculate weightedAvg using splits
 def get_weightedAvg(lineup_splits):
     hitters = []
     for player, splits in lineup_splits:
