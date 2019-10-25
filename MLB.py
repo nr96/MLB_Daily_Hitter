@@ -1,7 +1,7 @@
 from ESPN_Pitcher_Stats import get_espn_pitchers
 from MLB_Player_Cards import get_player_card
 from ESPN_BvP import get_pitcher_splits, get_team_id
-from MLB_Lineups import get_lineups_df
+from MLB_lineups import get_lineups_df
 import argparse
 
 
