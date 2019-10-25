@@ -5,15 +5,11 @@ from bs4 import BeautifulSoup
 test_url = 'http://mlb.mlb.com/team/player.jsp?player_id=543685'
 
 def get_player_card(url):
-    #print('gettting page...')
     page = requests.get(url)
-    #print(page)
     soup = BeautifulSoup(page.text, 'html.parser')
-    #print('page parsed, getting tables...')
     splits = soup.find('div', attrs={'class': 'player-splits__container'}) #
     splits_tables = splits.find('table') # get table html
     table_info = splits_tables.find_all('span')
-    #print('got tables')
     table_text = [header.text for header in table_info]
 
     headers = table_text[:12]
