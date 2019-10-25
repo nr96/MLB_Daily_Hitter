@@ -50,7 +50,7 @@ def get_players(player_db, player_rows):
     for player in player_rows:
         player_link = [a['href'] for a in player.find_all('a', href=True)] # get link to player's ESPN page
         stats = [stat.text for stat in player.find_all('td')] # get stats for player
-        stats[0] = player_link # discard rank and add player link
+        stats[0] = player_link[0] # discard rank and add player link
         stats = stats[1:] + stats[:1] # move 0th (link) column to last position
         player_db.append(stats) # add to player_db and discard rank
 
