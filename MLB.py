@@ -17,7 +17,7 @@ def load_dbs(args):
     pitcher_db = get_espn_pitchers()
     if args.test:
         print("Using Test Lineup")
-        lineups_df = get_lineups_df('https://www.baseballpress.com/lineups/2019-10-22')
+        lineups_df = get_lineups_df('https://www.baseballpress.com/lineups/2019-10-02')
         get_hitters(lineups_df,pitcher_db)
     else:
         lineups_df = get_lineups_df('https://www.baseballpress.com/lineups?q=%2Flineups%2F')
@@ -32,7 +32,7 @@ def get_hitters(lineups_df,pitcher_db):
     print("Running Algorithm...")
     lineup_splits = get_lineup_splits(lineups_df,pitcher_db)
     players = filter_players(lineup_splits)
-    hitters = get_weightedAvg(players)
+    hitters = get_weightedAvg_t(players)
     hitters.sort(key=lambda player: player[1], reverse=True)
 
     if len(hitters):
@@ -54,7 +54,8 @@ def get_lineup_splits(lineups_df,pitcher_db):
     for index, player in lineups_df.iterrows():
         opp_pitcher = player[4]
 
-        player_splits = get_player_card(player[6])
+        if player[0] != player[2]:
+            player_splits = get_player_card(player[6])
 
         if last_pitcher != opp_pitcher: # cache opp_pitcher info
             last_pitcher = opp_pitcher
@@ -133,6 +134,23 @@ def get_weightedAvg(lineup_splits):
         AVGs = [float(splits.iloc[i,9]) for i in range(len(splits))]
         weightedAvg = (sum(AVGs)/len(AVGs))
         if weightedAvg > .265:
+            hitters.append((player,weightedAvg))
+
+    return hitters
+
+
+def get_weightedAvg_t(lineup_splits):
+    hitters = []
+    for player, splits in lineup_splits:
+        AVGs = [float(splits.iloc[i,9]) for i in range(len(splits))]
+
+        for i in range(len(AVGs)):
+            if i == 1: AVGs[1] = AVGs[1] * .85
+            if i == 2: AVGs[2] = AVGs[2] * .75
+            if i == 3: AVGs[3] = AVGs[3] * 1.1
+
+        weightedAvg = (sum(AVGs)/len(AVGs))
+        if weightedAvg > .260:
             hitters.append((player,weightedAvg))
 
     return hitters
