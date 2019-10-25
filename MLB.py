@@ -16,11 +16,15 @@ def load_dbs(args):
     pitcher_db = get_espn_pitchers()
     if args.test:
         print("Using Test Lineup")
-        lineups_df = get_lineups_df()
+        lineups_df = get_lineups_df('https://www.baseballpress.com/lineups/2019-10-22')
         get_hitters(lineups_df,pitcher_db)
     else:
-        lineups_df = get_lineups_df()
-        get_hitters(lineups_df,pitcher_db)
+        lineups_df = get_lineups_df('https://www.baseballpress.com/lineups?q=%2Flineups%2F')
+        if len(lineups_df) > 1:
+            get_hitters(lineups_df,pitcher_db)
+        else:
+            print(" \nLineups not loaded, have they been released yet?")
+            print('https://www.baseballpress.com/lineups?q=%2Flineups%2F\n')
 
 
 def get_hitters(lineups_df,pitcher_db):
@@ -33,7 +37,7 @@ def get_hitters(lineups_df,pitcher_db):
     if len(hitters):
         print("\nMost Likely Hitters")
         for i, player in enumerate(hitters,0):
-            print(f"{i+1}. {player[0]}, weightedAvg: {player[1]}")
+            print(f"{i+1}. {player[0]}, {round(player[1],3)}")
     else:
         print('No desirable hitters')
 

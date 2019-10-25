@@ -2,12 +2,11 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
+#url = 'https://www.baseballpress.com/lineups?q=%2Flineups%2F'
+#url = 'https://www.baseballpress.com/lineups/2019-09-29'
+url = 'https://www.baseballpress.com/lineups/2019-10-22'
 
-def get_lineups_df():
-    #url = 'https://www.baseballpress.com/lineups?q=%2Flineups%2F'
-    #url = 'https://www.baseballpress.com/lineups/2019-09-29'
-    url = 'https://www.baseballpress.com/lineups/2019-10-22'
-
+def get_lineups_df(url):
     page = requests.get(url) # get webpage from url
     soup = BeautifulSoup(page.text, 'html5lib') # parse webpage into HTML
 
@@ -74,5 +73,5 @@ def get_team_abbrs(team):
     return(href.split('/')[-1])
 
 if __name__ == "__main__":
-    df = get_lineups_df()
+    df = get_lineups_df(url)
     print(df)
