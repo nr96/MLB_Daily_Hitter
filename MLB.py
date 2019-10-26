@@ -32,13 +32,15 @@ def get_hitters(lineups_df,pitcher_db):
     print("Running Algorithm...")
     lineup_splits = get_lineup_splits(lineups_df,pitcher_db)
     players = filter_players(lineup_splits)
-    hitters = get_weightedAvg_t(players)
+    hitters = get_weightedAvg(players)
     hitters.sort(key=lambda player: player[1], reverse=True)
 
     if len(hitters):
         print("\nMost Likely Hitters")
         for i, player in enumerate(hitters,0):
             print(f"{i+1}. {player[0]}, {round(player[1],3)}")
+            print(player[2])
+            print()
     else:
         print('No desirable hitters')
 
@@ -51,21 +53,29 @@ def get_lineup_splits(lineups_df,pitcher_db):
     pitcher_db.set_index('PLAYER',inplace=True)
 
     print(f"Loading Splits....")
+    print(f'This will take ~{len(lineups_df)} Seconds')
     for index, player in lineups_df.iterrows():
         opp_pitcher = player[4]
 
-        if player[0] != player[2]:
-            player_splits = get_player_card(player[6])
+        if player[0] == player[2]:
+            continue
+
+        player_splits = get_player_card(player[6])
 
         if last_pitcher != opp_pitcher: # cache opp_pitcher info
-            last_pitcher = opp_pitcher
-            last_pitch_url = get_opp_pitch_url(opp_pitcher,pitcher_db)
-            team_id = get_team_id(player[1])
-            opp_pitcher_id = get_player_id(last_pitch_url)
-            last_pitcher_df = get_PitcherHistory(opp_pitcher_id,team_id)
 
-        for index,player_faced in last_pitcher_df.iterrows(): # get BvP History
-            get_BvP(player_splits,player_faced,player[0],opp_pitcher)
+            try:
+                last_pitcher = opp_pitcher
+                last_pitch_url = get_opp_pitch_url(opp_pitcher,pitcher_db)
+                team_id = get_team_id(player[1])
+                opp_pitcher_id = get_player_id(last_pitch_url)
+                last_pitcher_df = get_PitcherHistory(opp_pitcher_id,team_id)
+            except TypeError:
+                continue # pitcher info not in DB, so skip
+
+        if type(last_pitcher_df) is not type(None):
+            for index,player_faced in last_pitcher_df.iterrows(): # get BvP History
+                get_BvP(player_splits,player_faced,player[0],opp_pitcher)
 
         lineup_splits.append((player[0],player_splits))
 
@@ -95,9 +105,11 @@ def get_PitcherHistory(opp_pitcher_id,team_id):
 
 
 def get_opp_pitch_url(opp_pitcher,pitcher_db):
-    url = pitcher_db.loc[opp_pitcher][-1]
-    if url: return url
-
+    try:
+        url = pitcher_db.loc[opp_pitcher][-1]
+        return url
+    except KeyError:
+        pass
 
 def get_player_id(url):
     id = [ch for ch in url if ch.isdigit()] # parse url for digits
@@ -131,29 +143,29 @@ def filter_players(lineup_splits):
 def get_weightedAvg(lineup_splits):
     hitters = []
     for player, splits in lineup_splits:
-        AVGs = [float(splits.iloc[i,9]) for i in range(len(splits))]
+        # AVGs = [float(splits.iloc[i,9]) for i in range(len(splits))]
+        AVGs = []
+        for i in range(len(splits)):
+            try:
+                AVGs.append(float(splits.iloc[i,9]))
+            except ValueError():
+                pass # missing info in DB
+
+        AVGs = set_weights(AVGs)
         weightedAvg = (sum(AVGs)/len(AVGs))
-        if weightedAvg > .265:
-            hitters.append((player,weightedAvg))
 
-    return hitters
-
-
-def get_weightedAvg_t(lineup_splits):
-    hitters = []
-    for player, splits in lineup_splits:
-        AVGs = [float(splits.iloc[i,9]) for i in range(len(splits))]
-
-        for i in range(len(AVGs)):
-            if i == 1: AVGs[1] = AVGs[1] * .85
-            if i == 2: AVGs[2] = AVGs[2] * .75
-            if i == 3: AVGs[3] = AVGs[3] * 1.1
-
-        weightedAvg = (sum(AVGs)/len(AVGs))
         if weightedAvg > .260:
-            hitters.append((player,weightedAvg))
+            hitters.append((player,weightedAvg,splits))
 
     return hitters
+
+
+def set_weights(AVGs):
+    for i in range(len(AVGs)): # set weights
+        if i == 1: AVGs[1] = AVGs[1] * .85 # Last15
+        if i == 2: AVGs[2] = AVGs[2] * .75 # Last30
+        if i == 3: AVGs[3] = AVGs[3] * 1.1 # vsPitcher
+    return AVGs
 
 if __name__ == "__main__":
     main()
